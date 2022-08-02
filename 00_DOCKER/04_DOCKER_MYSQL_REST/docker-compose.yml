@@ -1,0 +1,25 @@
+services:
+  mysqldb:
+    image: mysql:8.0
+    container_name: sql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+      - C:/Users/crisp/OneDrive/Desktop/html/database:/var/lib/mysql
+    ports:
+      - 3307:3306
+    expose:
+      - 3307
+    environment:
+      MYSQL_DATABASE: todos
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysqldb
+    networks:
+      - internalnet
+networks:
+  internalnet:
+    driver: bridge
