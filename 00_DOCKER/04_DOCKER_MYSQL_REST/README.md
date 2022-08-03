@@ -65,14 +65,12 @@ CREATE DATABASE IF NOT EXISTS todos;
 
 USE todos;
 
-DROP TABLE IF EXISTS todos;
-
-CREATE TABLE todos (
+CREATE TABLE IF NOT EXISTS todos(
   id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   title      VARCHAR(255) NOT NULL,
   completed  BIT NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
+  PRIMARY KEY (id)
 );
 ```
 
@@ -279,15 +277,18 @@ We are going to create a folder called `pool` and create a new mysql pool.
 
 ```ts
 import { createPool } from "mysql2";
+import { PoolOptions } from "mysql2/typings/mysql";
 
-export const pool = createPool({
+const options = {
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT as any,
+  port: Number.parseInt(process.env.DB_PORT as any),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  connectionLimit: process.env.DB_CONNECTION_LIMIT as any,
-});
+  connectionLimit: Number.parseInt(process.env.DB_CONNECTION_LIMIT as any),
+} as PoolOptions;
+
+export const pool = createPool(options);
 ```
 
 Now with this `pool` we will be able to commit and query the data from the database.
@@ -556,10 +557,122 @@ export default router;
 
 Now that we have created our server we need to connect to the database. So we are going to use docker to do this. First we will create a `docker-compose.yml` file in the root folder of our project and add the following configuration to it:
 
-```ts
-
+```yml
+version: "3.9"
+services:
+  mysqldb:
+    image: mysql:5.7
+    container_name: mysqlcontainer
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    environment:
+      MYSQL_DATABASE: "todos"
+      MYSQL_USER: "admin"
+      MYSQL_PASSWORD: "password"
+      MYSQL_ROOT_PASSWORD: "password"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysqldb
+    restart: on-failure
+    networks:
+      - internalnet
+  expressapp:
+    container_name: api
+    build: .
+    image: expressapp:1.0
+    ports:
+      - "3001:3001"
+    expose:
+      - "3001"
+    environment:
+      DB_HOST: mysqldb
+      DB_PORT: 3306
+      DB_USER: "admin"
+      DB_PASSWORD: "password"
+      DB_NAME: todos
+      DB_CONNECTION_LIMIT: 20
+      SERVICE_TAGS: dev
+      SERVICE_NAME: expressapp
+      PORT: 3001
+    depends_on:
+      - mysqldb
+    networks:
+      - internalnet
+networks:
+  internalnet:
+    driver: bridge
+volumes:
+  database:
 ```
 
-```ts
+Next we will then create a docker file in the root folder of our project and it will look as follows:
 
+```Dockerfile
+FROM node:alpine3.11
+WORKDIR /app
+COPY package*.json .
+RUN yarn
+COPY . .
+RUN yarn build
+EXPOSE 3001
+CMD ["yarn", "dev"]
 ```
+
+After creating a `Dockerfile` we can run the `compose up -d` command to run our `mysqlcontainer` and `api` container. If you have something that is running on a port `3306` we will need to stop it first. Here are the steps
+
+Open `cmd` as an `Administrator` on windows and types
+
+```shell
+netstat -ano | findstr :<PORT>
+
+# example
+netstat -ano | findstr :3306
+```
+
+You will see the output that looks as follows:
+
+```shell
+TCP    0.0.0.0:3306           0.0.0.0:0              LISTENING       4592
+TCP    0.0.0.0:33060          0.0.0.0:0              LISTENING       4592
+TCP    [::]:3306              [::]:0                 LISTENING       4592
+TCP    [::]:33060             [::]:0                 LISTENING       4592
+```
+
+Kill all the tasks that are running on this port by using the `PID` as follows
+
+```shell
+taskkill /PID <PID> /F
+# Example
+taskkill /PID 4592 /F
+```
+
+When you successfully killed all the processes that are running on this port, you will see the following output:
+
+```shell
+SUCCESS: The process with PID 4592 has been terminated.
+```
+
+Now we can run the `compose up -d` command as follows
+
+```shell
+docker compose up -d
+```
+
+Now if you run the `ps` command we will be able to see our containers running:
+
+```shell
+docker ps
+```
+
+Output
+
+```shell
+b1d97a8c3d7f   expressapp:1.0   "docker-entrypoint.s…"   10 seconds ago   Up 3 seconds   0.0.0.0:3001->3001/tcp              api
+fa840d4ee933   mysql:5.7        "docker-entrypoint.s…"   11 seconds ago   Up 6 seconds   0.0.0.0:3306->3306/tcp, 33060/tcp   mysqlcontainer
+```
+
+Now we can go and make `API` request to the server and everything will just work fine.

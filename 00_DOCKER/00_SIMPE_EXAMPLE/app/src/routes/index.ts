@@ -3,8 +3,7 @@ import Todos from "../model";
 import { Request, Response, Router } from "express";
 import mongoose from "mongoose";
 const router: Router = Router();
-
-const url: string = `mongodb://admin:password@localhost:27017`;
+const url: string = process.env.MONGO_CONNECTION_STRING as string;
 mongoose.connect(url, {}, (err) => {
   if (err) {
     throw err;

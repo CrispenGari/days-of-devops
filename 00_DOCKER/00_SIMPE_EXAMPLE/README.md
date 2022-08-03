@@ -211,7 +211,7 @@ And we will be able to see the interface where we can create our database `todo`
 If we send the following request to our server we will be able to get all the todos that are coming from `mongodb` database.
 
 ```shell
-GET http://localhost:3001/todos
+GET http://localhost:3003/todos
 ```
 
 The route for doing that looks as follows:
@@ -235,7 +235,7 @@ router.get("/todos", (_req: Request, res: Response) => {
 To create a new todo we sent the following request to the server:
 
 ```shell
-POST http://localhost:3001/todo/create
+POST http://localhost:3003/todo/create
 Content-Type: application/json
 
 {
@@ -260,7 +260,7 @@ router.post("/todo/create", (req: Request, res: Response) => {
 To get a single todo we send the following request to the server:
 
 ```shell
-GET http://localhost:3001/todo/62a2fbe73460ce2ca64319d4
+GET http://localhost:3003/todo/62a2fbe73460ce2ca64319d4
 
 ```
 
@@ -468,7 +468,7 @@ docker run myapp:1.0
 We will be able to see the following logs in the console:
 
 ```shell
-The server is running on port: 3001
+The server is running on port: 3003
 ```
 
 We can also be able to check all the images that are running using the `ps` command as follows:
@@ -488,6 +488,56 @@ CONTAINER ID   IMAGE           COMMAND                  CREATED          STATUS 
    app-mongo-express-1
 901ea18d6f4b   mongo           "docker-entrypoint.s…"   39 minutes ago   Up 38 minutes   0.0.0.0:27017->27017/tcp   app-mongodb-1
 ```
+
+### Node API to Docker
+
+Now we can create a `Dockerfile` that will allow our nodejs api server to run in the same with `mongodb`. Our docker file for building this nodejs api as an image is as follows:
+
+```Dockerfile
+FROM node:alpine3.11
+WORKDIR /app
+COPY package*.json .
+RUN yarn
+COPY . .
+RUN yarn build
+EXPOSE 3003
+CMD ["yarn", "dev"]
+```
+
+Then we will need to modify our `docker-compose.yml` file to look as follows:
+
+```yml
+version: "3.9" # latest version of docker compose (optional)
+services:
+  expressapi:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    container_name: expressapi
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_CONNECTION_STRING=mongodb://mongodb:27017
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    container_name: mongodb
+    volumes:
+      - ./db/:/data/db
+```
+
+Now we can start the containers in the same network by running the `docker compose up` as follows:
+
+```shell
+docker compose up -d
+```
+
+If everything works we should be able to make api requests to our sever.
 
 ### Refs
 

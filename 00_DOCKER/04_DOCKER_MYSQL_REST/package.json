@@ -11,6 +11,7 @@
   "scripts": {
     "watch": "tsc -w",
     "start": "ts-node src/server.ts",
+    "build": "tsc",
     "dev": "nodemon dist/server.js",
     "start:fast": "concurrently \"yarn watch\" \"yarn dev\""
   },

@@ -773,3 +773,5 @@ CONTAINER ID   IMAGE                  COMMAND                  CREATED          
 e1a92b4de324   nodeapp:1.0            "docker-entrypoint.s…"   11 seconds ago   Up 5 seconds   0.0.0.0:3002->3002/tcp             server
 495e093488a6   postgres:14.4-alpine   "docker-entrypoint.s…"   13 seconds ago   Up 7 seconds   5232/tcp, 0.0.0.0:5232->5432/tcp   pgsql
 ```
+
+Now if we can be able to do CRUD operations on our api at `http://localhost:3002`.

@@ -623,6 +623,14 @@ node                            alpine    16b18c065537   4 days ago     166MB
 
 So if you want to make your image very small in terms of size, the base image in your docker file should be of `alpine` versions.
 
+### Checking the environmental variables of a Conteiner
+
+To check the environmental variables of a running container we run the following command:
+
+```shell
+docker exec container_name env
+```
+
 ### Refs
 
 1. [www.docker.com](https://www.docker.com/get-started/)
