@@ -1,0 +1,48 @@
+version: "3.9"
+services:
+  postgresdb:
+    image: postgres:14.4-alpine
+    container_name: pgsql
+    restart: always
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+      # - $HOME/database:/var/lib/postgresql/data
+    ports:
+      - "5232:5432"
+    expose:
+      - "5232"
+    environment:
+      POSTGRES_DB: todos
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: postgresdb
+    networks:
+      - internalnet
+
+  nodeapp:
+    container_name: server
+    build: .
+    image: nodeapp:1.0
+    ports:
+      - "3002:3002"
+    expose:
+      - "3002"
+    environment:
+      DB_HOST: postgresdb
+      DB_PORT: 5432
+      DB_USER: "admin"
+      DB_PASSWORD: "password"
+      DB_NAME: todos
+      DB_CONNECTION_LIMIT: 20
+      SERVICE_TAGS: dev
+      SERVICE_NAME: nodeapp
+      PORT: 3002
+    depends_on:
+      - postgresdb
+    networks:
+      - internalnet
+
+networks:
+  internalnet:
+    driver: bridge
