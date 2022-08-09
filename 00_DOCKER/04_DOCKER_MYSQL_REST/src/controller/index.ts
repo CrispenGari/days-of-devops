@@ -44,54 +44,50 @@ export const getTodos = (req: Request, res: Response) => {
     }
   });
 };
-export const getTodo = async (req: Request, res: Response) => {
+export const getTodo = (req: Request, res: Response) => {
   logger.info(`method: ${req.method} route: ${req.originalUrl}`);
-  await pool.query(
-    QUERY.SELECT_TODO,
-    [req.params.id],
-    (err: any, result: any) => {
-      if (err) {
-        return res
-          .status(STATUS_CODES.INTERNAL_SERVER_ERROR.code)
-          .json(
-            new Res(
-              STATUS_CODES.INTERNAL_SERVER_ERROR.code,
-              STATUS_CODES.INTERNAL_SERVER_ERROR.status,
-              "There was an error processing your request: " + err.message,
-              undefined
-            )
-          );
-      }
-      if (result[0]) {
-        return res
-          .status(STATUS_CODES.OK.code)
-          .json(
-            new Res(
-              STATUS_CODES.OK.code,
-              STATUS_CODES.OK.status,
-              `Todo retrieved.`,
-              result[0]
-            )
-          );
-      } else {
-        return res
-          .status(STATUS_CODES.NOT_FOUND.code)
-          .json(
-            new Res(
-              STATUS_CODES.NOT_FOUND.code,
-              STATUS_CODES.NOT_FOUND.status,
-              `Todo with id ${req.params.id} was not found.`,
-              undefined
-            )
-          );
-      }
+  pool.query(QUERY.SELECT_TODO, [req.params.id], (err: any, result: any) => {
+    if (err) {
+      return res
+        .status(STATUS_CODES.INTERNAL_SERVER_ERROR.code)
+        .json(
+          new Res(
+            STATUS_CODES.INTERNAL_SERVER_ERROR.code,
+            STATUS_CODES.INTERNAL_SERVER_ERROR.status,
+            "There was an error processing your request: " + err.message,
+            undefined
+          )
+        );
     }
-  );
+    if (result[0]) {
+      return res
+        .status(STATUS_CODES.OK.code)
+        .json(
+          new Res(
+            STATUS_CODES.OK.code,
+            STATUS_CODES.OK.status,
+            `Todo retrieved.`,
+            result[0]
+          )
+        );
+    } else {
+      return res
+        .status(STATUS_CODES.NOT_FOUND.code)
+        .json(
+          new Res(
+            STATUS_CODES.NOT_FOUND.code,
+            STATUS_CODES.NOT_FOUND.status,
+            `Todo with id ${req.params.id} was not found.`,
+            undefined
+          )
+        );
+    }
+  });
 };
 
-export const addTodo = async (req: Request, res: Response) => {
+export const addTodo = (req: Request, res: Response) => {
   logger.info(`${req.method} ${req.originalUrl}, creating todo`);
-  await pool.query(
+  pool.execute(
     QUERY.CREATE_TODO,
     Object.values(req.body),
     (error: any, results: any) => {
@@ -108,8 +104,6 @@ export const addTodo = async (req: Request, res: Response) => {
             )
           );
       } else {
-        //const patient = { id: results.insertedId, ...req.body, created_at: new Date() };
-        const todo = results[0][0];
         return res
           .status(STATUS_CODES.CREATED.code)
           .send(
@@ -117,16 +111,16 @@ export const addTodo = async (req: Request, res: Response) => {
               STATUS_CODES.CREATED.code,
               STATUS_CODES.CREATED.status,
               `Todo created`,
-              { todo }
+              { todo: "do do created." }
             )
           );
       }
     }
   );
 };
-export const updateTodo = async (req: Request, res: Response) => {
+export const updateTodo = (req: Request, res: Response) => {
   logger.info(`${req.method} ${req.originalUrl}, updating todo`);
-  await pool.query(
+  pool.query(
     QUERY.UPDATE_TODO,
     [...Object.values(req.body), req.params.id],
     (error, _results: any) => {
@@ -158,7 +152,7 @@ export const updateTodo = async (req: Request, res: Response) => {
   );
 };
 
-export const deleteTodo = async (req: Request, res: Response) => {
+export const deleteTodo = (req: Request, res: Response) => {
   logger.info(`${req.method} ${req.originalUrl}, deleting todo`);
   pool.query(QUERY.DELETE_TODO, [req.params.id], (err: any, results: any) => {
     if (err) {

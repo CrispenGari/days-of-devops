@@ -11,9 +11,9 @@ export const STATUS_CODES = {
 // queries
 
 export const QUERY = {
-  SELECT_TODOS: "SELECT * FROM todos ORDER BY created_at DESC LIMIT 100",
-  SELECT_TODO: "SELECT * FROM todos WHERE id = ?",
-  CREATE_TODO: "INSERT INTO todos (title) VALUES (?)",
-  UPDATE_TODO: "UPDATE todos SET title = ?, completed = ? WHERE id = ?",
-  DELETE_TODO: "DELETE FROM todos WHERE id = ?",
+  SELECT_TODOS: "SELECT * FROM todos ORDER BY created_at DESC LIMIT 100;",
+  SELECT_TODO: "SELECT * FROM todos WHERE id = ?;",
+  CREATE_TODO: "INSERT INTO todos (title) VALUES (?);",
+  UPDATE_TODO: "UPDATE todos SET title = ?, completed = ? WHERE id = ?;",
+  DELETE_TODO: "DELETE FROM todos WHERE id = ?;",
 };
