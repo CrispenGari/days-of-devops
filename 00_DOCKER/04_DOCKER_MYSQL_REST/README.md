@@ -577,6 +577,7 @@ services:
       MYSQL_ROOT_PASSWORD: "password"
       SERVICE_TAGS: dev
       SERVICE_NAME: mysqldb
+      MYSQL_HOST: mysqldb
     restart: on-failure
     networks:
       - internalnet
@@ -594,7 +595,7 @@ services:
       DB_USER: "admin"
       DB_PASSWORD: "password"
       DB_NAME: todos
-      DB_CONNECTION_LIMIT: 20
+      DB_CONNECTION_LIMIT: 500
       SERVICE_TAGS: dev
       SERVICE_NAME: expressapp
       PORT: 3001
@@ -607,6 +608,7 @@ networks:
     driver: bridge
 volumes:
   database:
+
 ```
 
 Next we will then create a docker file in the root folder of our project and it will look as follows:
