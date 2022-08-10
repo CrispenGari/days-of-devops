@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  postgresdb:
+    image: postgres:14.4-alpine
+    container_name: pgsql
+    restart: always
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: todos
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      SERVICE_NAME: postgresdb
+    networks:
+      - internalnet
+  springboot:
+    container_name: springbootserver
+    build: .
+    image: springboot:1.0
+    ports:
+      - "3001:3001"
+    expose:
+      - "3001"
+    environment:
+      DB_USER: "admin"
+      DB_PASSWORD: "password"
+    depends_on:
+      - postgresdb
+    networks:
+      - internalnet
+networks:
+  internalnet:
+    driver: bridge

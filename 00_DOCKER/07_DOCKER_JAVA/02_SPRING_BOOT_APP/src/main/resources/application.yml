@@ -1,0 +1,18 @@
+
+# postgres sql connection
+spring:
+  datasource:
+    password: password
+    url: jdbc:postgresql://postgresdb:5432/todos
+    username: admin
+  jpa:
+    hibernate:
+      ddl-auto: create #create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+# Configuring the port for our server
+server:
+  port: 3001
