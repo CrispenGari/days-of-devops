@@ -6,6 +6,7 @@ services:
     restart: always
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+      - $HOME/database:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     expose:

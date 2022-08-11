@@ -474,10 +474,11 @@ services:
     restart: always
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+      - $HOME/database:/var/lib/postgresql/data
     ports:
-      - "5232:5432"
+      - "5432:5432"
     expose:
-      - "5232"
+      - "5432"
     environment:
       POSTGRES_DB: todos
       POSTGRES_USER: admin
@@ -512,7 +513,7 @@ And then we change our `application.yml` file to look as follows:
 spring:
   datasource:
     password: password
-    url: jdbc:postgresql://postgresdb:5232/todos
+    url: jdbc:postgresql://postgresdb:5432/todos
     username: admin
   jpa:
     hibernate:
@@ -539,9 +540,19 @@ Then we will need to create a `Dockerfile` in the root folder of our project and
 
 FROM openjdk:17
 
+WORKDIR /app
+
 COPY ./target/docker-0.0.1-SNAPSHOT.jar ./docker-0.0.1-SNAPSHOT.jar
 
+EXPOSE 3001
+
 CMD ["java","-jar","docker-0.0.1-SNAPSHOT.jar"]
+```
+
+After we have created our `Dockerfile` we can run the following command to start the containers in the same network:
+
+```shell
+docker compose up -d
 ```
 
 Now if we run the `ps` command we will get the following as output:
@@ -550,4 +561,23 @@ Now if we run the `ps` command we will get the following as output:
 CONTAINER ID   IMAGE                  COMMAND                  CREATED          STATUS         PORTS                    NAMES
 9c9e5dbb3b86   springboot:1.0         "java -jar app.jar"      11 seconds ago   Up 4 seconds   0.0.0.0:3001->3001/tcp   springbootserver
 ec94b1652c48   postgres:14.4-alpine   "docker-entrypoint.s…"   13 seconds ago   Up 7 seconds   0.0.0.0:5432->5432/tcp   pgsql
+```
+
+Which means now we can be able to make API request to the server for example is you visit the url:
+
+```json
+http://127.0.0.1:3001/api/v1/todos/all
+```
+
+Here is the expected response:
+
+```json
+{
+  "timeStamp": "2022-08-11T06:50:38.8154984",
+  "statusCode": 200,
+  "status": "OK",
+  "todo": {
+    "todos": []
+  }
+}
 ```

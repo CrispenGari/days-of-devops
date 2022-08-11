@@ -1,4 +1,3 @@
-
 # postgres sql connection
 spring:
   datasource:

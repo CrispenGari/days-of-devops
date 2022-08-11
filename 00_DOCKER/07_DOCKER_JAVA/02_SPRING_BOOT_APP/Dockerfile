@@ -1,9 +1,10 @@
+
 FROM openjdk:17
 
-ARG JAR_FILE=target/*.jar
+WORKDIR /app
 
-COPY ${JAR_FILE} app.jar
+COPY ./target/docker-0.0.1-SNAPSHOT.jar ./docker-0.0.1-SNAPSHOT.jar
 
 EXPOSE 3001
 
-CMD ["java","-jar","app.jar"]
+CMD ["java","-jar","docker-0.0.1-SNAPSHOT.jar"]
